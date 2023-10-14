@@ -10,6 +10,7 @@ class User(db.Model):
     email = db.Column(db.String(40), nullable=False, unique=True)
     first_name = db.Column(db.String(25), nullable=False)
     last_name = db.Column(db.String(25), nullable=False)
+    password = db.Column(db.String(20), nullable=False)
 
     bookshelves = db.relationship('Bookshelf', backref='user', lazy=True)
 
@@ -28,6 +29,7 @@ class Book(db.Model):
     categories = db.Column(db.Text)
     image_links = db.Column(db.String)
     info_link = db.Column(db.String)
+    volume_id = db.Column(db.String(50), unique=True)
 
     # Define a relationship with users (library)
     users = db.relationship('User', secondary='user_library', backref='library', lazy=True)
