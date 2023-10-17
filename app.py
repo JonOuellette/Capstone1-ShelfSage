@@ -8,7 +8,7 @@ import requests
 
 from secretkeys import MY_SECRET_KEY
 from models import connect_db, User, db, Book, BookShelf
-from forms import SearchForm, RegisterForm
+from forms import SearchForm, RegisterForm, LoginForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -66,7 +66,55 @@ def signup():
 
     if form.validate_on_submit():
         try:
-            user = User.
+            user = User.signup(
+                username = form.username.data,
+                password = form.password.data,
+                email = form.email.data,
+                first_name = form.first_name.data,
+                last_name = form.last_name.data
+            )
+            db.session.commit()
+        
+        except IntegrityError as e:
+            flash("Username already taken", 'danger'),
+            return render_template('signup.html', form = form)
+        
+        user_login(user)
+
+        return redirect("/")
+    
+    else: 
+        return render_template('signup.html', form=form)
+
+@app.route('/login', methods= ["GET", "POST"])
+def login():
+    """Handles user login"""
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = User.authenticate(form.username.data, form.password.data)
+
+        if user:
+            user_login(user)
+            flash(f"Hello {user.username}!", "success")
+            return redirect("/")
+        
+        flash("Invalid credentials", 'danger')
+    
+    return render_template('login.html' ,form=form)
+
+
+@app.route('/logout', methods = ["GET", "POST"])
+def logout():
+    """Handles logging out user."""
+
+    user_logout()
+
+    flash("You have successfully logged out", 'success')
+
+    return redirect("/login")
+
 
 
 @app.route("/")
