@@ -1,34 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shelf Sage</title>
-</head>
-<body>
 
-    {% if not g.user %}
-    <li><a href="/signup">Sign up</a></li>
-    <li><a href="/login">Log in</a></li>
-    {% else %}
-    <li>
-        <a href="/users/{{ g.user.id }}">
-          <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
-        </a>
-    </li>
-    ##### other links to add in on nav bar
-    <li><a href="/logout">Log out</a></li>
-    {% endif %}
-    
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.css">
+    <script src="https://unpkg.com/jquery"></script>
+    <script src="https://unpkg.com/popper"></script>
+    <script src="https://unpkg.com/bootstrap"></script>
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+    <link rel="stylesheet" href="/static/stylesheets/style.css">
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+    <nav class="navbar navbar-expand navbar-dark bg-dark">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a href="/" class="navbar-brand">
+                    Shelf Sage
+                </a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                {% if not g.user %}
+                    <li><a href="/signup">Sign up</a></li>
+                    <li><a href="/login">Log in</a></li>
+                {% else %}
+                    <li>
+                        <a href="/users/{{ g.user.id }}">
+                            <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
+                        </a>
+                    </li>
+                    <li><a href="/logout">Log out</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
     <div class="container">
         {% for category, message in get_flashed_messages(with_categories=True) %}
-        <div class="alert alert-{{ category }}">{{ message }}</div>
+            <div class="alert alert-{{ category }}">{{ message }}</div>
         {% endfor %}
-    
+
         {% block content %}
-        {% endblock %}    
-    
+        {% endblock %}
     </div>
 
 </body>
+
 </html>

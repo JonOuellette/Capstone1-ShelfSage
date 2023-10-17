@@ -1,2 +1,24 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
 {% block content %}
+    <h1>Welcome to Shelf Sage</h1>
+
+    {% if g.user %}
+        <h2>Your Bookshelf</h2>
+        <ul>
+            {% for book in books %}
+                <li>
+                    <h3>{{ book.volumeInfo.title }}</h3>
+                    <p>Author(s): {{ book.volumeInfo.authors|join(', ') }}</p>
+                    <p>Publisher: {{ book.volumeInfo.publisher }}</p>
+                    <p>Published Date: {{ book.volumeInfo.publishedDate }}</p>
+                    {% if book.volumeInfo.imageLinks %}
+                        <img src="{{ book.volumeInfo.imageLinks.thumbnail }}" alt="Book Cover">
+                    {% else %}
+                        <p>No image available</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

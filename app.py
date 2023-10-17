@@ -32,7 +32,7 @@ API_BASE_URL = "https://www.googleapis.com/books/v1/"
 ####################################################
 # User signup/login/logout
 
-@app.before_reqeust
+@app.before_request
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
 
@@ -115,10 +115,11 @@ def logout():
 
     return redirect("/login")
 
-
+##############################################################################################################
+#home page
 
 @app.route("/")
 def homepage():
 
 
-    return render_template("templates/index.html")
+    return render_template("index.html")
