@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shelf Sage</title>
+</head>
+<body>
+
+    {% if not g.user %}
+    <li><a href="/signup">Sign up</a></li>
+    <li><a href="/login">Log in</a></li>
+    {% else %}
+    <li>
+        <a href="/users/{{ g.user.id }}">
+          <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
+        </a>
+    </li>
+    ##### other links to add in on nav bar
+    <li><a href="/logout">Log out</a></li>
+    {% endif %}
+    
+    <div class="container">
+        {% for category, message in get_flashed_messages(with_categories=True) %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    
+        {% block content %}
+        {% endblock %}    
+    
+    </div>
+
+</body>
+</html>

@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 
 db = SQLAlchemy()
 
@@ -15,6 +16,26 @@ class User(db.Model):
     bookshelves = db.relationship('Bookshelf', backref='user', lazy=True)
 
     library = db.relationship('Book', secondary='user_library', backref='users', lazy=True)
+
+    @classmethod
+    def signup(cls, username, email, password, first_name, last_name):
+        """Sign up user.
+
+        Hashes password and adds user to system.
+        """
+
+        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
+
+        user = User(
+            username=username,
+            email=email,
+            password=hashed_pwd,
+            first_name = first_name,
+            last_name = last_name
+        )
+
+        db.session.add(user)
+        return user
 
 
 class Book(db.Model):
@@ -60,3 +81,13 @@ class BookshelfContent(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     bookshelf_id = db.Column(db.Integer, db.ForeignKey('bookshelves.id'))
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
+
+
+def connect_db(app):
+    """Connect this database to provided Flask app.
+
+    You should call this in your Flask app.
+    """
+
+    db.app = app
+    db.init_app(app)
