@@ -1,0 +1,37 @@
+<!-- search_results.html -->
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Search Results</h1>
+
+    {% if results %}
+        <p>Showing results {{ start + 1 }} to {{ start + results|length }} of {{ total_results }}</p>
+        <ul>
+        {% for result in results %}
+            <li>
+                <h3>{{ result.volumeInfo.title }}</h3>
+                <p>Author(s): {{ result.volumeInfo.authors|join(', ') }}</p>
+                <p>Publisher: {{ result.volumeInfo.publisher }}</p>
+                <p>Published Date: {{ result.volumeInfo.publishedDate }}</p>
+                {% if result.volumeInfo.imageLinks %}
+                        <img src="{{ result.volumeInfo.imageLinks.thumbnail }}" alt="Book Cover">
+                {% else %}
+                    <p>No image available</p>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+        <nav>
+            {% if start > 0 %}
+                <a href="{{ url_for('search', query=query, type=type, start=start-max, max=max) }}">Previous</a>
+            {% endif %}
+            {% if start + max < total_results %}
+                <a href="{{ url_for('search', query=query, type=type, start=start+max, max=max) }}">Next</a>
+            {% endif %}
+        </nav>
+    
+        {% else %}
+        <p>No results found. Please try a different search.</p>
+    {% endif %}
+    
+{% endblock %}
