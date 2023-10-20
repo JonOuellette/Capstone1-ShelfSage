@@ -127,10 +127,16 @@ def logout():
 # data = response.json()
 # total_search_per_query = data['totalItems']
 
-
-@app.route('/', methods=['GET', 'POST'])
-def home():
+@app.route('/')
+def homepage():
     form = SearchForm()
+    return render_template('home.html', form=form)
+
+
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    form = SearchForm(request.form)
     search_query = ''
     search_type = ''
 
@@ -138,22 +144,26 @@ def home():
     start_index = request.args.get('start', default=0, type=int)
     max_results = request.args.get('max', default=10, type=int)
 
-    # Check if it's a form submission
+    
     if form.validate_on_submit():
+        #Direct form submission
         search_query = form.search_query.data
         search_type = form.search_type.data
+        return redirect(url_for('search', query=search_query, type=search_type, start=start_index, max=max_results))
     else:
         # If not form submission, it could be page navigation, so retrieve the query from URL params
         search_query = request.args.get('query', '')
         search_type = request.args.get('type', '')
 
     if search_query:
+        #prepares the request parameters
         params = {
             'q': f'{search_type}:{search_query}',
             'startIndex': start_index,
             'maxResults': max_results
         }
 
+        #Makes the API request
         response = requests.get('https://www.googleapis.com/books/v1/volumes', params=params)
 
         if response.status_code == 200:
@@ -162,11 +172,11 @@ def home():
             results = data.get('items', [])
 
             # Render the same page with results
-            return render_template('home.html', form=form, results=results, total_results=total_results, start=start_index, max=max_results, query=search_query, type=search_type)
+            return render_template('search_results.html', form=form, results=results, total_results=total_results, start=start_index, max=max_results, query=search_query, type=search_type)
         else:
             flash(f'Error: Unable to fetch search results. Status code {response.status_code}', 'danger')
 
-    return render_template('home.html', form=form)
+    return render_template('search_results.html', form=form)
 
 
 
