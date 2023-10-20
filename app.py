@@ -1,8 +1,9 @@
 import os
 
-from flask import Flask, render_template, redirect, request, session, jsonify, g, flash
+from flask import Flask, render_template, redirect, request, session, jsonify, g, flash, url_for
 # from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
+
 
 import requests
 
@@ -118,8 +119,54 @@ def logout():
 ##############################################################################################################
 #home page
 
-@app.route("/")
-def homepage():
+# @app.route("/", methods=['GET', 'POST'])
+# def home():
+#     form = SearchForm()
+
+# response = requests.get('https://www.googleapis.com/books/v1/volumes', params=params)
+# data = response.json()
+# total_search_per_query = data['totalItems']
 
 
-    return render_template("index.html")
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    form = SearchForm()
+    search_query = ''
+    search_type = ''
+
+    # Extract pagination parameters or set default
+    start_index = request.args.get('start', default=0, type=int)
+    max_results = request.args.get('max', default=10, type=int)
+
+    # Check if it's a form submission
+    if form.validate_on_submit():
+        search_query = form.search_query.data
+        search_type = form.search_type.data
+    else:
+        # If not form submission, it could be page navigation, so retrieve the query from URL params
+        search_query = request.args.get('query', '')
+        search_type = request.args.get('type', '')
+
+    if search_query:
+        params = {
+            'q': f'{search_type}:{search_query}',
+            'startIndex': start_index,
+            'maxResults': max_results
+        }
+
+        response = requests.get('https://www.googleapis.com/books/v1/volumes', params=params)
+
+        if response.status_code == 200:
+            data = response.json()
+            total_results = data.get('totalItems', 0)
+            results = data.get('items', [])
+
+            # Render the same page with results
+            return render_template('home.html', form=form, results=results, total_results=total_results, start=start_index, max=max_results, query=search_query, type=search_type)
+        else:
+            flash(f'Error: Unable to fetch search results. Status code {response.status_code}', 'danger')
+
+    return render_template('home.html', form=form)
+
+
+
