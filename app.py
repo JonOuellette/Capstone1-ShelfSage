@@ -250,9 +250,9 @@ def delete_book_from_library(book_id):
     book = Book.query.get_or_404(book_id)
 
     # Check if the book is actually in the user's library before attempting deletion
-    if book in g.user.books:
+    if book in g.user.library:
         # Remove the book and update the database
-        g.user.books.remove(book)
+        g.user.library.remove(book)
         db.session.commit()
         flash('Book removed from your library.', 'success')
     else:
