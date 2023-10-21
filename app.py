@@ -188,14 +188,17 @@ def add_book_to_library():
 
     # Extract data from the form submission or API response
     print(request.form)  # Debugging line to print all form data to console
-
-    book_id = request.form['book_id']  
-    title = request.form['title']
-    authors = request.form['authors']  # Assuming 'authors' is a comma-separated string
+    print('FORM DATA:', request.form)
+    book_id = request.form.get('book_id')  
+    title = request.form.get('title')
+    authors = request.form.get('authors')
+    publisher = request.form.get('publisher')
+    publisher_date = request.form.get("publisher_date")
+    image_links = request.form.get('image_links')
 
     # other book details you want to include, extracted similarly
 
-    print(f"book_id: {book_id}, title: {title}, authors: {authors}")
+    print(f"book_id: {book_id}, title: {title}, authors: {authors}, publisher: {publisher}, publisher_date: {publisher_date}, image_links:{image_links}")
           
     # Check if the book already exists in the database
     book = Book.query.filter_by(volume_id=book_id).first()
@@ -204,12 +207,15 @@ def add_book_to_library():
         # Create a new book instance and add it to the database
         book = Book(
             title=title,
-            authors=authors,  # Now you're setting the authors field
+            authors=authors, 
+            publisher=publisher,
+            publisher_date=publisher_date,
+            image_links = image_links,
             volume_id=book_id,
             # ... set other fields ...
         )
         db.session.add(book)
-        # You don't need to commit here; it's done below.
+        
 
     # Check if the book is already in the user's library
     if book not in g.user.library:
@@ -230,6 +236,7 @@ def view_library():
     
     # Retrieve books from the user's library
     books = g.user.library
+    print(books) 
     return render_template('user_library.html', books=books)
 
 

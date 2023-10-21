@@ -23,10 +23,14 @@
                     <input type="hidden" name="book_id" value="{{ result.id }}">
                     <input type="hidden" name="title" value="{{ result.volumeInfo.title }}">
                     <input type="hidden" name="authors" value="{{ result.volumeInfo.authors|join(', ') }}">
+                    <input type="hidden" name="publisher" value="{{ result.volumeInfo.publisher }}">
+                    <input type="hidden" name="publisher_date" value="{{ result.volumeInfo.publishedDate }}">
+                    <input type="hidden" name="image_links" value="{{ result.volumeInfo.imageLinks.thumbnail if result.volumeInfo.imageLinks else '' }}">
                     <!-- Include other necessary book details as hidden inputs -->
                     <!-- ... -->
                     <input type="submit" value="Add to My Library">
                 </form>
+                
 
             </li>
         {% endfor %}

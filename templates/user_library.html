@@ -6,11 +6,11 @@
     {% for book in books %}
     <li>
         <h3>{{ book.title }}</h3>
-        <p>Author(s): {{ book.authors|join(', ') }}</p>
+        <p>Author(s): {{ book.authors|join('') }}</p>
         <p>Publisher: {{ book.publisher }}</p>
-        <p>Published Date: {{ book.publishedDate }}</p>
-        {% if book.imageLinks %}
-                <img src="{{ result.volumeInfo.imageLinks.thumbnail }}" alt="Book Cover">
+        <p>Published Date: {{ book.publisher_date }}</p>
+        {% if book.image_links %}
+                <img src="{{ book.image_links }}" alt="Book Cover">
         {% else %}
             <p>No image available</p>
         {% endif %}
