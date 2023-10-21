@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content%}
+
+    <h1>Book Details</h1>
+
+    
+        <div>
+            <h2>{{book.title}}</h2>
+
+            <p>Author(s): {{book.authors|join(', ')|safe}}</p>
+            <p>Publisher(s): {{book.publisher|safe}}</p>
+            <p>Published Date: {{book.publishedDate|safe}}</p>
+            <p>Descrption: {{book.description|safe}}</p>
+            <p>Categories: {{book.categories|safe}}</p>
+            
+            {% if book.imageLinks %}
+                {% if book.imageLinks.thumbnail %}
+                    <img src="{{ book.imageLinks.thumbnail }}" alt="Book Cover">
+                {% endif %}
+            {% elif book.image_link %}
+                <img src="{{ book.image_link }}" alt="Book Cover">
+            {% else %}
+                <p>No image available.</p>
+            {% endif %}
+            
+            
+        </div>
+    
+        </div>
+
+
+
+
+{% endblock %}

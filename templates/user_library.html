@@ -8,7 +8,7 @@
         <h3>{{ book.title }}</h3>
         <p>Author(s): {{ book.authors|join('') }}</p>
         <p>Publisher: {{ book.publisher }}</p>
-        <p>Published Date: {{ book.publisher_date }}</p>
+        <p>Published Date: {{ book.published_date }}</p>
         {% if book.image_links %}
                 <img src="{{ book.image_links }}" alt="Book Cover">
         {% else %}

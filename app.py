@@ -169,6 +169,7 @@ def search():
 
         if response.status_code == 200:
             data = response.json()
+            print(data)
             total_results = data.get('totalItems', 0)
             results = data.get('items', [])
 
@@ -186,47 +187,16 @@ def add_book_to_library():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    # Extract data from the form submission or API response
-    print(request.form)  # Debugging line to print all form data to console
-    print('FORM DATA:', request.form)
-    book_id = request.form.get('book_id')  
-    title = request.form.get('title')
-    authors = request.form.get('authors')
-    publisher = request.form.get('publisher')
-    publisher_date = request.form.get("publisher_date")
-    image_links = request.form.get('image_links')
+    # Debugging line to print all form data to console
+    print(request.form)  
+    print('FORM DATA:', request.form)    
+    
+    
+     # Make a request to the Google Books API to get the specific volume details
+    response = requests.get(f'https://www.googleapis.com/books/v1/volumes/{volume_id}')
 
-    # other book details you want to include, extracted similarly
-
-    print(f"book_id: {book_id}, title: {title}, authors: {authors}, publisher: {publisher}, publisher_date: {publisher_date}, image_links:{image_links}")
-          
-    # Check if the book already exists in the database
-    book = Book.query.filter_by(volume_id=book_id).first()
-
-    if book is None:
-        # Create a new book instance and add it to the database
-        book = Book(
-            title=title,
-            authors=authors, 
-            publisher=publisher,
-            publisher_date=publisher_date,
-            image_links = image_links,
-            volume_id=book_id,
-            # ... set other fields ...
-        )
-        db.session.add(book)
-        
-
-    # Check if the book is already in the user's library
-    if book not in g.user.library:
-        # Add the book to the user's library and commit changes
-        g.user.library.append(book)
-        db.session.commit()
-        flash('Book added to your library!', 'success')
-    else:
-        flash('You already have this book in your library.', 'info')
-
-    return redirect(url_for('view_library'))   # or to a relevant location
+    )
+           
 
 @app.route('/my_library')
 def view_library():
@@ -261,3 +231,28 @@ def delete_book_from_library(book_id):
     return redirect(url_for('view_library'))
 
 
+@app.route('/book_details/<string:volume_id>')
+def book_details(volume_id):
+    book = None
+    # Check if the user is logged in and try to retrieve the book from their library.
+    # if g.user:
+    #     book = Book.query.filter_by(volume_id=volume_id).first()
+        
+    # If the user is not logged in or the book is not in their library,
+    # fetch the book details from the Google Books API.
+    if book is None:
+        api_url = f"https://www.googleapis.com/books/v1/volumes/{volume_id}"
+        try:
+            response = requests.get(api_url)
+            if response.status_code == 200:
+                book_data = response.json()
+                book = book_data.get('volumeInfo', {})
+            else:
+                flash('Book not found.', 'danger')
+                return redirect(url_for('home'))
+        except requests.RequestException as e:
+            flash('Error requesting book details.', 'danger')
+            return redirect(url_for('home'))
+    
+    # Render the template with book details from either the database or the API.
+    return render_template('book_details.html', book=book)

@@ -71,7 +71,8 @@ class Book(db.Model):
     subtitle = db.Column(db.String)
     authors = db.Column(db.String, nullable=False)
     publisher = db.Column(db.String)
-    publisher_date = db.Column(db.Date)
+    published_date = db.Column(db.Date)
+    description = db.Column(db.Text)
     categories = db.Column(db.Text)
     image_links = db.Column(db.String)
     info_link = db.Column(db.String)
@@ -82,11 +83,11 @@ class BookShelf(db.Model):
     __tablename__ = "bookshelves"
     
     id = db.Column(db.Integer, primary_key = True)
-    title = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)
     description = db.Column(db.Text)
 
      # Define foreign key to link to user
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
 
     # Define a relationship with books (shelf content)
     books = db.relationship('Book', secondary='bookshelf_content', backref='bookshelves', lazy=True)

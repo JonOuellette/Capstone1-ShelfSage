@@ -9,10 +9,11 @@
         <ul>
         {% for result in results %}
             <li>
-                <h3>{{ result.volumeInfo.title }}</h3>
+                <h3><a href="{{ url_for('book_details', volume_id=result.id) }}">{{ result.volumeInfo.title }}</a></h3>
                 <p>Author(s): {{ result.volumeInfo.authors|join(', ') }}</p>
                 <p>Publisher: {{ result.volumeInfo.publisher }}</p>
                 <p>Published Date: {{ result.volumeInfo.publishedDate }}</p>
+                
                 {% if result.volumeInfo.imageLinks %}
                         <img src="{{ result.volumeInfo.imageLinks.thumbnail }}" alt="Book Cover">
                 {% else %}
@@ -24,7 +25,7 @@
                     <input type="hidden" name="title" value="{{ result.volumeInfo.title }}">
                     <input type="hidden" name="authors" value="{{ result.volumeInfo.authors|join(', ') }}">
                     <input type="hidden" name="publisher" value="{{ result.volumeInfo.publisher }}">
-                    <input type="hidden" name="publisher_date" value="{{ result.volumeInfo.publishedDate }}">
+                    <input type="hidden" name="published_date" value="{{ result.volumeInfo.publishedDate }}">
                     <input type="hidden" name="image_links" value="{{ result.volumeInfo.imageLinks.thumbnail if result.volumeInfo.imageLinks else '' }}">
                     <!-- Include other necessary book details as hidden inputs -->
                     <!-- ... -->
