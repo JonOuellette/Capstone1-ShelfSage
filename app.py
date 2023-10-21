@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 import requests
 
 from secretkeys import MY_SECRET_KEY
-from models import connect_db, User, db, Book, BookShelf
+from models import connect_db, User, db, Book, Bookshelf
 from forms import SearchForm, RegisterForm, LoginForm
 
 CURR_USER_KEY = "curr_user"
@@ -132,7 +132,7 @@ def homepage():
     form = SearchForm()
     return render_template('home.html', form=form)
 
-
+###############################################################################################################
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():

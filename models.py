@@ -12,11 +12,12 @@ class User(db.Model):
     email = db.Column(db.String(40), nullable=False, unique=True)
     first_name = db.Column(db.String(25), nullable=False)
     last_name = db.Column(db.String(25), nullable=False)
-    password = db.Column(db.String(20), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
 
     bookshelves = db.relationship('Bookshelf', backref='user', lazy=True)
 
-    library = db.relationship('Book', secondary='user_library', backref='users', lazy=True)
+    library = db.relationship('Book', secondary='user_library', backref='book_owners', lazy=True)
+
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
@@ -76,10 +77,8 @@ class Book(db.Model):
     info_link = db.Column(db.String)
     volume_id = db.Column(db.String(50), unique=True)
 
-    # Define a relationship with users (library)
-    users = db.relationship('User', secondary='user_library', backref='library', lazy=True)
-
-class BookShelf(db.Model):
+    
+class Bookshelf(db.Model):
     __tablename__ = "bookshelves"
     
     id = db.Column(db.Integer, primary_key = True)
