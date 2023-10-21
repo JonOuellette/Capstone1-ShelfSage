@@ -4,17 +4,18 @@ from flask import Flask, render_template, redirect, request, session, jsonify, g
 # from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-
 import requests
 
+app = Flask(__name__)
+app.app_context().push()
+
 from secretkeys import MY_SECRET_KEY
-from models import connect_db, User, db, Book, Bookshelf
+from models import connect_db, User, db, Book, BookShelf
 from forms import SearchForm, RegisterForm, LoginForm
 
 CURR_USER_KEY = "curr_user"
 
-app = Flask(__name__)
-app.app_context().push()
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost/ShelfSage'))
@@ -178,5 +179,78 @@ def search():
 
     return render_template('search_results.html', form=form)
 
+
+@app.route('/add_book_to_library', methods=['POST'])
+def add_book_to_library():
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    # Extract data from the form submission or API response
+    print(request.form)  # Debugging line to print all form data to console
+
+    book_id = request.form['book_id']  
+    title = request.form['title']
+    authors = request.form['authors']  # Assuming 'authors' is a comma-separated string
+
+    # other book details you want to include, extracted similarly
+
+    print(f"book_id: {book_id}, title: {title}, authors: {authors}")
+          
+    # Check if the book already exists in the database
+    book = Book.query.filter_by(volume_id=book_id).first()
+
+    if book is None:
+        # Create a new book instance and add it to the database
+        book = Book(
+            title=title,
+            authors=authors,  # Now you're setting the authors field
+            volume_id=book_id,
+            # ... set other fields ...
+        )
+        db.session.add(book)
+        # You don't need to commit here; it's done below.
+
+    # Check if the book is already in the user's library
+    if book not in g.user.library:
+        # Add the book to the user's library and commit changes
+        g.user.library.append(book)
+        db.session.commit()
+        flash('Book added to your library!', 'success')
+    else:
+        flash('You already have this book in your library.', 'info')
+
+    return redirect(url_for('view_library'))   # or to a relevant location
+
+@app.route('/my_library')
+def view_library():
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    # Retrieve books from the user's library
+    books = g.user.library
+    return render_template('user_library.html', books=books)
+
+
+@app.route('/delete_book_from_library/<book_id>', methods=['POST'])
+def delete_book_from_library(book_id):
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect(url_for('login'))  # or wherever your login route is
+
+    # Get the book object
+    book = Book.query.get_or_404(book_id)
+
+    # Check if the book is actually in the user's library before attempting deletion
+    if book in g.user.books:
+        # Remove the book and update the database
+        g.user.books.remove(book)
+        db.session.commit()
+        flash('Book removed from your library.', 'success')
+    else:
+        flash('This book is not in your library.', 'danger')
+
+    return redirect(url_for('view_library'))
 
 

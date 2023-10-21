@@ -18,6 +18,16 @@
                 {% else %}
                     <p>No image available</p>
                 {% endif %}
+
+                <form action="{{ url_for('add_book_to_library') }}" method="post">
+                    <input type="hidden" name="book_id" value="{{ result.id }}">
+                    <input type="hidden" name="title" value="{{ result.volumeInfo.title }}">
+                    <input type="hidden" name="authors" value="{{ result.volumeInfo.authors|join(', ') }}">
+                    <!-- Include other necessary book details as hidden inputs -->
+                    <!-- ... -->
+                    <input type="submit" value="Add to My Library">
+                </form>
+
             </li>
         {% endfor %}
         </ul>

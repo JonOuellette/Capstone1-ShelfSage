@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{g.user.username}} Library</h1>
+<ul>
+    {% for book in books %}
+    <li>
+        <h3>{{ book.title }}</h3>
+        <p>Author(s): {{ book.authors|join(', ') }}</p>
+        <p>Publisher: {{ book.publisher }}</p>
+        <p>Published Date: {{ book.publishedDate }}</p>
+        {% if book.imageLinks %}
+                <img src="{{ result.volumeInfo.imageLinks.thumbnail }}" alt="Book Cover">
+        {% else %}
+            <p>No image available</p>
+        {% endif %}
+
+        <form action="{{ url_for('delete_book_from_library', book_id=book.id) }}" method="POST">
+            <input type="submit" value="Delete">
+        </form>
+
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
