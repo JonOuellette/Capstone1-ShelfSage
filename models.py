@@ -71,7 +71,7 @@ class Book(db.Model):
     subtitle = db.Column(db.String)
     authors = db.Column(db.String, nullable=False)
     publisher = db.Column(db.String)
-    published_date = db.Column(db.Date)
+    published_date = db.Column(db.String)
     description = db.Column(db.Text)
     categories = db.Column(db.Text)
     image_links = db.Column(db.String)

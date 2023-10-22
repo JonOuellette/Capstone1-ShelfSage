@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 import requests
 
+
 app = Flask(__name__)
 app.app_context().push()
 
@@ -118,21 +119,52 @@ def logout():
     return redirect("/login")
 
 ##############################################################################################################
-#home page
-
-# @app.route("/", methods=['GET', 'POST'])
-# def home():
-#     form = SearchForm()
-
-# response = requests.get('https://www.googleapis.com/books/v1/volumes', params=params)
-# data = response.json()
-# total_search_per_query = data['totalItems']
+#home page and helper functions
 
 @app.route('/')
-def homepage():
+def home():
     form = SearchForm()
     return render_template('home.html', form=form)
 
+def get_books(volume_id):
+    #checks to see if the book is already in the database
+    book = Book.query.filter_by(volume_id=volume_id).first()
+
+    if book is None:
+        #if the book does not exist in the database we then get the book data from the API
+        response = requests.get(f"https://www.googleapis.com/books/v1/volumes/{volume_id}")
+
+        if response.status_code == 200:
+            data = response.json()
+            volume_info=data['volumeInfo']
+
+            # Prepare the authors and categories for storage
+            authors = volume_info.get('authors')
+            authors_str = ', '.join(authors) if authors else None  # Convert list to string
+
+            categories = volume_info.get('categories')
+            categories_str = ', '.join(categories) if categories else None  # Convert list to string
+
+            book = Book(
+                title = volume_info.get('title'),
+                subtitle = volume_info.get('subtitle'),
+                authors = authors_str,
+                publisher = volume_info.get('publisher'),
+                published_date = volume_info.get('publishedDate'),
+                categories = categories_str,
+                description = volume_info.get('description'),
+                image_links = volume_info.get('imageLinks', {}).get('thumbnail'),
+                info_link = volume_info.get('infoLink'),
+                volume_id=volume_id
+                )
+
+            db.session.add(book)
+            db.session.commit()
+        else:
+            error_message = f"An error occurred while communicating with the Google Books API. Status code: {response.status_code}."
+            return None, error_message
+        
+    return book
 ###############################################################################################################
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -181,8 +213,29 @@ def search():
     return render_template('search_results.html', form=form)
 
 
-@app.route('/add_book_to_library', methods=['POST'])
-def add_book_to_library():
+@app.route('/book_details/<string:volume_id>')
+def book_details(volume_id):
+    book = None
+    
+    if book is None:
+        api_url = f"https://www.googleapis.com/books/v1/volumes/{volume_id}"
+        try:
+            response = requests.get(api_url)
+            if response.status_code == 200:
+                book_data = response.json()
+                book = book_data.get('volumeInfo', {})
+            else:
+                flash('Book not found.', 'danger')
+                return redirect(url_for('home'))
+        except requests.RequestException as e:
+            flash('Error requesting book details.', 'danger')
+            return redirect(url_for('home'))
+    
+    # Render the template with book details from either the database or the API.
+    return render_template('book_details.html', book=book)
+
+@app.route('/add_book_to_library/<string:volume_id>', methods=['POST'])
+def add_book_to_library(volume_id):
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -190,13 +243,20 @@ def add_book_to_library():
     # Debugging line to print all form data to console
     print(request.form)  
     print('FORM DATA:', request.form)    
-    
-    
-     # Make a request to the Google Books API to get the specific volume details
-    response = requests.get(f'https://www.googleapis.com/books/v1/volumes/{volume_id}')
 
-    )
-           
+    book = get_books(volume_id)
+    print(book)
+
+    if book not in g.user.library:
+        g.user.library.append(book)
+        db.session.commit()
+        flash("Book added to your library", "success")
+
+    else: 
+        flash("This book is already in your library.", "danger")
+
+    return redirect(url_for('view_library'))    
+               
 
 @app.route('/my_library')
 def view_library():
@@ -206,7 +266,9 @@ def view_library():
     
     # Retrieve books from the user's library
     books = g.user.library
-    print(books) 
+    print(books)
+    
+
     return render_template('user_library.html', books=books)
 
 
@@ -231,28 +293,3 @@ def delete_book_from_library(book_id):
     return redirect(url_for('view_library'))
 
 
-@app.route('/book_details/<string:volume_id>')
-def book_details(volume_id):
-    book = None
-    # Check if the user is logged in and try to retrieve the book from their library.
-    # if g.user:
-    #     book = Book.query.filter_by(volume_id=volume_id).first()
-        
-    # If the user is not logged in or the book is not in their library,
-    # fetch the book details from the Google Books API.
-    if book is None:
-        api_url = f"https://www.googleapis.com/books/v1/volumes/{volume_id}"
-        try:
-            response = requests.get(api_url)
-            if response.status_code == 200:
-                book_data = response.json()
-                book = book_data.get('volumeInfo', {})
-            else:
-                flash('Book not found.', 'danger')
-                return redirect(url_for('home'))
-        except requests.RequestException as e:
-            flash('Error requesting book details.', 'danger')
-            return redirect(url_for('home'))
-    
-    # Render the template with book details from either the database or the API.
-    return render_template('book_details.html', book=book)
