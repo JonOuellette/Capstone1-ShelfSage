@@ -5,6 +5,7 @@ from flask import Flask, render_template, redirect, request, session, jsonify, g
 from sqlalchemy.exc import IntegrityError
 
 import requests
+import re
 
 
 app = Flask(__name__)
@@ -224,6 +225,22 @@ def book_details(volume_id):
             if response.status_code == 200:
                 book_data = response.json()
                 book = book_data.get('volumeInfo', {})
+                book['volume_id'] = volume_id 
+                
+                #Debugging step: print the description to the console
+                print(book.get('description'))
+
+                description = book.get('description', '')
+                # This pattern matches a quotation mark at the end of the string.
+                # ^ asserts the start of the string, and $ asserts the end of the string.
+                pattern = r'^"|"$'
+
+                # re.sub() replaces the pattern with an empty string in 'description'.
+                cleaned_description = re.sub(pattern, '', description)
+
+                # Update the book information with the cleaned description.
+                book['description'] = cleaned_description
+
             else:
                 flash('Book not found.', 'danger')
                 return redirect(url_for('home'))
@@ -272,7 +289,7 @@ def view_library():
     return render_template('user_library.html', books=books)
 
 
-@app.route('/delete_book_from_library/<book_id>', methods=['POST'])
+@app.route('/delete_book_from_library/<int:book_id>', methods=['POST'])
 def delete_book_from_library(book_id):
     if not g.user:
         flash("Access unauthorized.", "danger")
