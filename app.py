@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 import requests
 import re
+import random
 
 
 app = Flask(__name__)
@@ -125,7 +126,23 @@ def logout():
 @app.route('/')
 def home():
     form = SearchForm()
-    return render_template('home.html', form=form)
+    
+
+    num_books = 5
+
+    response = requests.get('https://www.googleapis.com/books/v1/volumes', params={'q': '*', 'maxResults': 40}) 
+
+    random_books = []
+
+    if response.status_code == 200:
+        data = response.json()
+        all_books = data.get('items', [])
+        
+        if all_books:
+            random_books = random.sample(all_books, min(num_books, len(all_books)))
+
+    return render_template('home.html', form=form, random_books = random_books)
+
 
 def get_books(volume_id):
     #checks to see if the book is already in the database

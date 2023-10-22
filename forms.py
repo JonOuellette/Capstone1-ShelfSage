@@ -24,6 +24,6 @@ class UserEditForm(FlaskForm):
 
 
 class SearchForm(FlaskForm):
-    search_query = StringField('Search Books', validators=[DataRequired()])
-    search_type = SelectField('Search Type', choices=[('title', 'Title'), ('author', 'Author'), ('subject', 'Category')], default='title')
+    search_query = StringField('Search Books:', validators=[DataRequired()])
+    search_type = SelectField('Search Type:', choices=[('title', 'Title'), ('author', 'Author'), ('subject', 'Category')], default='title')
     submit = SubmitField('Search')

@@ -7,9 +7,7 @@
     <li>
         <h3><a href="{{ url_for('book_details', volume_id=book.volume_id) }}">{{ book.title }}</a></h3>
             <p>Author(s): {{book.authors|safe}}</p>
-            <p>Publisher(s): {{book.publisher|safe}}</p>
-            <p>Published Date: {{book.published_date|safe}}</p>
-            <p>Categories: {{book.categories|safe}}</p>
+        
         {% if book.image_links %}
                 <img src="{{ book.image_links }}" alt="Book Cover">
         {% else %}
