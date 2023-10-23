@@ -29,7 +29,7 @@ class SearchForm(FlaskForm):
     search_type = SelectField('Search Type:', choices=[('title', 'Title'), ('author', 'Author'), ('subject', 'Category')], default='title')
     submit = SubmitField('Search')
 
-class BookShelfForm(FlaskForm):
+class BookshelfForm(FlaskForm):
     """Form for creating a bookshelf"""
     name = StringField('BookShelf Name', validators=[DataRequired(), Length(max=20)])
     description = StringField('Description:', validators = [Length(max=100)])

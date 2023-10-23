@@ -14,7 +14,7 @@ app.app_context().push()
 
 from secretkeys import MY_SECRET_KEY
 from models import connect_db, User, db, Book, BookShelf, BookshelfContent
-from forms import SearchForm, RegisterForm, LoginForm, BookShelfForm
+from forms import SearchForm, RegisterForm, LoginForm, BookshelfForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -158,10 +158,12 @@ def get_books(volume_id):
 
             # Prepare the authors and categories for storage
             authors = volume_info.get('authors')
-            authors_str = ', '.join(authors) if authors else None  # Convert list to string
+            # Convert authors list to string
+            authors_str = ', '.join(authors) if authors else None  
 
             categories = volume_info.get('categories')
-            categories_str = ', '.join(categories) if categories else None  # Convert list to string
+            # Convert categories list to string
+            categories_str = ', '.join(categories) if categories else None  
 
             book = Book(
                 title = volume_info.get('title'),
@@ -188,6 +190,7 @@ def get_books(volume_id):
 def get_book_from_db(volume_id):
     """Attempt to retrieve a book from the database using its volume_id."""
     book = Book.query.filter_by(volume_id=volume_id).first()
+    
     return book
 ###############################################################################################################
 ###Search books, get book details and store in user library
@@ -317,23 +320,23 @@ def view_library():
 
 @app.route('/delete_book_from_library/<int:book_id>', methods=['POST'])
 def delete_book_from_library(book_id):
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect(url_for('login'))  # or wherever your login route is
+    response_data = {'success': False}  
 
-    # Get the book object
+    if not g.user:
+        response_data['error'] = "Access unauthorized."
+        return jsonify(response_data), 401
+
     book = Book.query.get_or_404(book_id)
 
-    # Check if the book is actually in the user's library before attempting deletion
     if book in g.user.library:
-        # Remove the book and update the database
         g.user.library.remove(book)
         db.session.commit()
-        flash('Book removed from your library.', 'success')
+        response_data['success'] = True
+        response_data['message'] = "Book removed from your library."
     else:
-        flash('This book is not in your library.', 'danger')
+        response_data['error'] = "This book is not in your library."
 
-    return redirect(url_for('view_library'))
+    return jsonify(response_data)
 
 #####################################################################################################################################################
 # Create and delete bookshelfs. Move books to bookshelfs.
@@ -344,53 +347,58 @@ def create_bookshelf():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    form = BookShelfForm()
+    form = BookshelfForm()
 
     if form.validate_on_submit():
         new_bookshelf = BookShelf(
             name=form.name.data,
             description=form.description.data,
-            user_id=g.user.id  # Assume g.user is the current logged-in user
+            user_id=g.user.id  
         )
         db.session.add(new_bookshelf)
         db.session.commit()
         flash("Bookshelf created!", "success")
-        return redirect(f"/bookshelf/{new_bookshelf.id}")  # Redirect to the new bookshelf's detail view
+        # Redirect to the new bookshelf's detail view
+        return redirect("/my_library")  
 
     return render_template('create_bookshelf.html', form=form)
 
 
 @app.route('/add_book_to_bookshelf/<int:bookshelf_id>/<string:volume_id>', methods=['POST'])
 def add_book_to_bookshelf(bookshelf_id, volume_id):
+    response_data = {'success': False}  
+
     if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
+        response_data['error'] = "Access unauthorized."
+        return jsonify(response_data), 401  
 
     bookshelf = BookShelf.query.get_or_404(bookshelf_id)
 
     if bookshelf.user_id != g.user.id:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
+        response_data['error'] = "Access unauthorized."
+        return jsonify(response_data), 403  
 
     # Get the book from the database
     book = get_book_from_db(volume_id)
 
     if book is None:
-        flash("No such book exists in the database.", "danger")
-        return redirect(f"/bookshelf/{bookshelf_id}")  
+        response_data['error'] = "No such book exists in the database."
+        return jsonify(response_data), 404  
 
     # Check if the book is already in this bookshelf
     existing_content = BookshelfContent.query.filter_by(bookshelf_id=bookshelf.id, book_id=book.id).first()
     if existing_content:
-        flash(f"This book is already in {bookshelf.name}.", "danger")
+        response_data['error'] = f"This book is already in {bookshelf.name}."
+        return jsonify(response_data), 409  
     else:
         # Create a new BookshelfContent item and associate it with the book and bookshelf
         new_content = BookshelfContent(bookshelf_id=bookshelf.id, book_id=book.id)
         db.session.add(new_content)
         db.session.commit()
-        flash(f"Book added to {bookshelf.name}", "success")
 
-    return redirect(f"/bookshelf/{bookshelf_id}")  
+        response_data['success'] = True
+        response_data['message'] = f"Book added to {bookshelf.name}"
+        return jsonify(response_data)  
 
 @app.route('/bookshelf/<int:bookshelf_id>')
 def view_bookshelf(bookshelf_id):
@@ -401,29 +409,89 @@ def view_bookshelf(bookshelf_id):
         return redirect("/")
 
     # Get the books in this bookshelf through the BookshelfContent relationships
-    books = [content.book for content in bookshelf.bookshelf_contents]  # Using the backref to navigate the relationship
+    books = [content.book for content in bookshelf.bookshelf_contents]  
 
     return render_template('user_library.html', bookshelf=bookshelf, books=books)
 
 @app.route('/rename_bookshelf/<int:bookshelf_id>', methods=['POST'])
 def rename_bookshelf(bookshelf_id):
-    # Authentication checks, data validation, and renaming logic here...
     new_name = request.json.get('newName')
-    # Locate the bookshelf and update its name
-    # Save changes and handle errors
-    return jsonify({'success': True})  # or return appropriate message based on the outcome
+    bookshelf = BookShelf.query.get(bookshelf_id)  
+
+    if bookshelf is None:
+        return jsonify({'success': False, 'error': 'Bookshelf not found'}), 404
+
+    # Update the name
+    bookshelf.name = new_name  
+    db.session.commit()  
+
+    # Return success if the operation was successful
+    return jsonify({'success': True})
 
 @app.route('/delete_bookshelf/<int:bookshelf_id>', methods=['POST'])
 def delete_bookshelf(bookshelf_id):
-    # Authentication checks, data validation, and deletion logic here...
+   # Authentication checks, data validation, and deletion logic here...
     # Locate the bookshelf and delete it
-    # Save changes and handle errors
-    return jsonify({'success': True})  # or return appropriate message based on the outcome
+    bookshelf = BookShelf.query.get_or_404(bookshelf_id)
+
+    if bookshelf.user_id != g.user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    try:
+        db.session.delete(bookshelf)
+        db.session.commit()
+    except Exception as e:
+        # Log the exception here
+        return jsonify({'success': False, 'error': str(e)})
+
+    return jsonify({'success': True})
 
 @app.route('/reorder_bookshelves', methods=['POST'])
 def reorder_bookshelves():
-    # Authentication checks, data validation, and reordering logic here...
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    # Extract the new order from the request body
     new_order = request.json.get('newOrder')
-    # Reorder the bookshelves based on new_order
-    # Save changes and handle errors
-    return jsonify({'success': True})  # or return appropriate message based on the outcome
+
+    try:
+        #  Assumes that the bookshelf has an order field which dictates the order in the user library 
+      
+        for index, bookshelf_id in enumerate(new_order):
+            bookshelf = BookShelf.query.get(bookshelf_id)
+            if bookshelf and bookshelf.user_id == g.user.id:  # Check ownership
+                bookshelf.order = index  # Set the new order
+                db.session.commit()
+        return jsonify({'success': True, 'message': 'Bookshelves reordered successfully.'})
+    except Exception as e:
+        # Handle exceptions here
+        return jsonify({'success': False, 'error': str(e)})
+    
+@app.route('/remove_book_from_bookshelf/<int:bookshelf_id>/<int:book_id>', methods=['POST'])
+def remove_book_from_bookshelf(bookshelf_id, book_id):
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect(url_for('login'))
+
+    # Assuming you have a Bookshelf model similar to your Book model
+    bookshelf = BookShelf.query.get_or_404(bookshelf_id)
+
+    # Check if the user owns the bookshelf
+    if bookshelf.user_id != g.user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect(url_for('login'))  
+
+    # Get the book object
+    book = Book.query.get_or_404(book_id)
+
+    # Now, remove the book from the bookshelf specifically, rather than the entire library
+    if book in bookshelf.books:
+        bookshelf.books.remove(book)  
+        db.session.commit()
+        flash('Book removed from the bookshelf.', 'success')
+        return jsonify(success=True)  # Respond with JSON indicating success
+    else:
+        flash('This book is not on this bookshelf.', 'danger')
+        return jsonify(success=False, error='Book not found on the specified bookshelf.'), 400

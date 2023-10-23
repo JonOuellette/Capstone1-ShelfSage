@@ -15,7 +15,6 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
 
     bookshelves = db.relationship('BookShelf', backref='user', lazy=True)
-
     library = db.relationship('Book', secondary='user_library', backref='book_owners', lazy=True)
 
 
@@ -77,6 +76,8 @@ class Book(db.Model):
     image_links = db.Column(db.String)
     info_link = db.Column(db.String)
     volume_id = db.Column(db.String(50), unique=True)
+
+    
 
     
 class BookShelf(db.Model):

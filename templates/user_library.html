@@ -1,64 +1,60 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>{{g.user.username}} Library</h1>
-<ul>
-    {% for book in books %}
-    <li>
-        <h3><a href="{{ url_for('book_details', volume_id=book.volume_id) }}">{{ book.title }}</a></h3>
-            <p>Author(s): {{book.authors|safe}}</p>
-        
-        {% if book.image_links %}
-                <img src="{{ book.image_links }}" alt="Book Cover">
-        {% else %}
-            <p>No image available</p>
-        {% endif %}
+<div class="container">
+    <h1>{{g.user.username}}'s Library</h1>
 
-        <form action="{{ url_for('delete_book_from_library', book_id=book.id) }}" method="POST">
-            <input type="submit" value="Delete">
-        </form>
-
-    </li>
-    {% endfor %}
-</ul>
-<!-- Display user's bookshelves -->
-{% for bookshelf in bookshelves %}
-    <div>
-        <h2>{{ bookshelf.name }}</h2>
-        <p>{{ bookshelf.description }}</p>
-        <!-- List books in the bookshelf -->
-        <ul>
-            {% for book in bookshelf.books %}
-                <li>{{ book.title }} - <a href="#" class="remove-book" data-book-id="{{ book.id }}">Remove</a></li>
-            {% endfor %}
-        </ul>
-        <div class="bookshelf" data-bookshelf-id="{{ bookshelf.id }}">
-            <input type="text" value="{{ bookshelf.name }}" class="bookshelf-name" readonly>
-            <button class="rename-bookshelf">Rename</button>
-            <button class="delete-bookshelf">Delete</button>
-            <!-- Books and other bookshelf content here... -->
+    <!-- User's bookshelves -->
+    <div class="row">
+        {% for bookshelf in bookshelves %}
+        <div class="col-md-4">
+            <div class="bookshelf card mt-4" data-bookshelf-id="{{ bookshelf.id }}">
+                <div class="card-body">
+                    <h2 class="card-title bookshelf-name">{{ bookshelf.name }}</h2> 
+                    <p class="card-text">{{ bookshelf.description }}</p>
+                    <ul class="list-group list-group-flush">
+                        <!-- List books in the bookshelf -->
+                        {% for book in bookshelf.books %}
+                        <li class="list-group-item">{{ book.title }} <a href="#" class="remove-book float-right" data-book-id="{{ book.id }}">Remove</a></li>
+                        {% endfor %}
+                    </ul>
+           
+                    <div class="card-body">
+                        <button class="rename-bookshelf btn btn-primary">Rename Bookshelf</button>
+                        <button class="delete-bookshelf btn btn-danger">Delete BookShelf</button>
+                    </div>
+                </div>
+            </div>
         </div>
+        {% endfor %}
     </div>
-{% endfor %}
 
-<!-- Display books not in a bookshelf -->
-<ul>
-    {% for book in books %}
-        <!-- Check if the book is not in a bookshelf -->
+    <!-- Books not in a bookshelf -->
+    <h2 class="mt-5">Other Books</h2>
+    <ul class="list-unstyled">
+        {% for book in books %}
         {% if book not in shelved_books %}
-            <li>
-                {{ book.title }}
+        <li class="media my-4">
+            <img src="{{ book.image_links }}" class="mr-3" alt="Book Cover" style="width: 64px; height: 64px;">
+            <div class="media-body">
+                <h5 class="mt-0 mb-1">{{ book.title }}</h5>
                 <!-- Dropdown to select bookshelf -->
-                <select class="bookshelf-selector" data-book-id="{{ book.id }}">
+                <select class="bookshelf-selector form-control" data-volume-id="{{ book.volume_id }}">
                     <option value="">Add to bookshelf...</option>
                     {% for bookshelf in bookshelves %}
-                        <option value="{{ bookshelf.id }}">{{ bookshelf.name }}</option>
+                    <option value="{{ bookshelf.id }}">{{ bookshelf.name }}</option>
                     {% endfor %}
                 </select>
-            </li>
+                
+                <!-- "Delete Book" button -->
+                <button class="btn btn-danger delete-book mt-2" data-book-id="{{ book.id }}">Delete Book</button>
+                
+                
+            </div>
+        </li>
         {% endif %}
-    {% endfor %}
-</ul>
-
-
+        {% endfor %}
+    </ul>
+</div>
 {% endblock %}
+

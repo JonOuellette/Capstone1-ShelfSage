@@ -1,0 +1,12 @@
+.bookshelves-row {
+    display: flex;
+    flex-wrap: wrap; 
+}
+
+.bookshelf {
+    flex: 1; 
+    min-width: calc(33.33% - 20px); 
+    margin: 10px;
+    border: 1px solid #ddd; 
+    
+}
