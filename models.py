@@ -93,11 +93,14 @@ class BookShelf(db.Model):
     books = db.relationship('Book', secondary='bookshelf_content', backref='bookshelves', lazy=True)
 
 class UserLibrary(db.Model):
+  
     __tablename__ = "user_library"
 
     id = db.Column(db.Integer, primary_key = True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
+
+    book = db.relationship('Book', backref='user_libraries')
 
 class BookshelfContent(db.Model):
     __tablename__ = "bookshelf_content"
@@ -106,6 +109,8 @@ class BookshelfContent(db.Model):
     bookshelf_id = db.Column(db.Integer, db.ForeignKey('bookshelves.id'))
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
 
+    book = db.relationship('Book', backref='bookshelf_contents')
+    bookshelf = db.relationship('BookShelf', backref='bookshelf_contents')
 
 def connect_db(app):
     """Connect this database to provided Flask app.

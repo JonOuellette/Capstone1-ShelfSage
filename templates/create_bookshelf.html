@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Create a New Bookshelf</h2>
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    
+    <div>
+        {{ form.name.label }}
+        {{ form.name }}
+        {% if form.name.errors %}
+            <ul>
+            {% for error in form.name.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div>
+        {{ form.description.label }}
+        {{ form.description }}
+        {% if form.description.errors %}
+            <ul>
+            {% for error in form.description.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div>
+        <input type="submit" value="Create">
+    </div>
+  </form>
+
+  <a href="{{ url_for('view_library') }}">Back to Library</a>  
+{% endblock %}

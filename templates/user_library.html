@@ -21,5 +21,44 @@
     </li>
     {% endfor %}
 </ul>
+<!-- Display user's bookshelves -->
+{% for bookshelf in bookshelves %}
+    <div>
+        <h2>{{ bookshelf.name }}</h2>
+        <p>{{ bookshelf.description }}</p>
+        <!-- List books in the bookshelf -->
+        <ul>
+            {% for book in bookshelf.books %}
+                <li>{{ book.title }} - <a href="#" class="remove-book" data-book-id="{{ book.id }}">Remove</a></li>
+            {% endfor %}
+        </ul>
+        <div class="bookshelf" data-bookshelf-id="{{ bookshelf.id }}">
+            <input type="text" value="{{ bookshelf.name }}" class="bookshelf-name" readonly>
+            <button class="rename-bookshelf">Rename</button>
+            <button class="delete-bookshelf">Delete</button>
+            <!-- Books and other bookshelf content here... -->
+        </div>
+    </div>
+{% endfor %}
+
+<!-- Display books not in a bookshelf -->
+<ul>
+    {% for book in books %}
+        <!-- Check if the book is not in a bookshelf -->
+        {% if book not in shelved_books %}
+            <li>
+                {{ book.title }}
+                <!-- Dropdown to select bookshelf -->
+                <select class="bookshelf-selector" data-book-id="{{ book.id }}">
+                    <option value="">Add to bookshelf...</option>
+                    {% for bookshelf in bookshelves %}
+                        <option value="{{ bookshelf.id }}">{{ bookshelf.name }}</option>
+                    {% endfor %}
+                </select>
+            </li>
+        {% endif %}
+    {% endfor %}
+</ul>
+
 
 {% endblock %}

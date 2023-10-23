@@ -32,7 +32,12 @@
                     <li>
                         <a href="/my_library">My Library</a>
                     </li>
-                    <li><a href="/logout">Log out</a></li>
+                    <li>
+                        <a href="/logout">Log out</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('create_bookshelf') }}">Create Bookshelf</a>
+                    </li>
                 {% endif %}
             </ul>
         </div>
@@ -46,6 +51,12 @@
         {% block content %}
         {% endblock %}
     </div>
+
+   
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script> 
+<script src="{{ url_for('static', filename='bookshelf-management.js') }}"></script>
+
 
 </body>
 

@@ -24,6 +24,12 @@ class UserEditForm(FlaskForm):
 
 
 class SearchForm(FlaskForm):
+    """Search form for books"""
     search_query = StringField('Search Books:', validators=[DataRequired()])
     search_type = SelectField('Search Type:', choices=[('title', 'Title'), ('author', 'Author'), ('subject', 'Category')], default='title')
     submit = SubmitField('Search')
+
+class BookShelfForm(FlaskForm):
+    """Form for creating a bookshelf"""
+    name = StringField('BookShelf Name', validators=[DataRequired(), Length(max=20)])
+    description = StringField('Description:', validators = [Length(max=100)])

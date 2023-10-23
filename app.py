@@ -13,8 +13,8 @@ app = Flask(__name__)
 app.app_context().push()
 
 from secretkeys import MY_SECRET_KEY
-from models import connect_db, User, db, Book, BookShelf
-from forms import SearchForm, RegisterForm, LoginForm
+from models import connect_db, User, db, Book, BookShelf, BookshelfContent
+from forms import SearchForm, RegisterForm, LoginForm, BookShelfForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -183,7 +183,14 @@ def get_books(volume_id):
             return None, error_message
         
     return book
+
+
+def get_book_from_db(volume_id):
+    """Attempt to retrieve a book from the database using its volume_id."""
+    book = Book.query.filter_by(volume_id=volume_id).first()
+    return book
 ###############################################################################################################
+###Search books, get book details and store in user library
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
@@ -248,8 +255,7 @@ def book_details(volume_id):
                 print(book.get('description'))
 
                 description = book.get('description', '')
-                # This pattern matches a quotation mark at the end of the string.
-                # ^ asserts the start of the string, and $ asserts the end of the string.
+                #some books appeared to have a random " at the end of the description.  This was coming directly from the API.  Using regular expression to remove the random ".
                 pattern = r'^"|"$'
 
                 # re.sub() replaces the pattern with an empty string in 'description'.
@@ -298,12 +304,15 @@ def view_library():
         flash("Access unauthorized.", "danger")
         return redirect("/")
     
-    # Retrieve books from the user's library
+    # Retrieve books from the user's library and bookshelves
     books = g.user.library
     print(books)
+    bookshelves = BookShelf.query.filter_by(user_id=g.user.id).all()
     
+    # Prepare a list of all books that are in bookshelves
+    shelved_books = [book for shelf in bookshelves for book in shelf.books]
 
-    return render_template('user_library.html', books=books)
+    return render_template('user_library.html', books=books, bookshelves=bookshelves, shelved_books=shelved_books)
 
 
 @app.route('/delete_book_from_library/<int:book_id>', methods=['POST'])
@@ -326,4 +335,95 @@ def delete_book_from_library(book_id):
 
     return redirect(url_for('view_library'))
 
+#####################################################################################################################################################
+# Create and delete bookshelfs. Move books to bookshelfs.
 
+@app.route('/create_bookshelf', methods=['GET', 'POST'])
+def create_bookshelf():
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    form = BookShelfForm()
+
+    if form.validate_on_submit():
+        new_bookshelf = BookShelf(
+            name=form.name.data,
+            description=form.description.data,
+            user_id=g.user.id  # Assume g.user is the current logged-in user
+        )
+        db.session.add(new_bookshelf)
+        db.session.commit()
+        flash("Bookshelf created!", "success")
+        return redirect(f"/bookshelf/{new_bookshelf.id}")  # Redirect to the new bookshelf's detail view
+
+    return render_template('create_bookshelf.html', form=form)
+
+
+@app.route('/add_book_to_bookshelf/<int:bookshelf_id>/<string:volume_id>', methods=['POST'])
+def add_book_to_bookshelf(bookshelf_id, volume_id):
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    bookshelf = BookShelf.query.get_or_404(bookshelf_id)
+
+    if bookshelf.user_id != g.user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    # Get the book from the database
+    book = get_book_from_db(volume_id)
+
+    if book is None:
+        flash("No such book exists in the database.", "danger")
+        return redirect(f"/bookshelf/{bookshelf_id}")  
+
+    # Check if the book is already in this bookshelf
+    existing_content = BookshelfContent.query.filter_by(bookshelf_id=bookshelf.id, book_id=book.id).first()
+    if existing_content:
+        flash(f"This book is already in {bookshelf.name}.", "danger")
+    else:
+        # Create a new BookshelfContent item and associate it with the book and bookshelf
+        new_content = BookshelfContent(bookshelf_id=bookshelf.id, book_id=book.id)
+        db.session.add(new_content)
+        db.session.commit()
+        flash(f"Book added to {bookshelf.name}", "success")
+
+    return redirect(f"/bookshelf/{bookshelf_id}")  
+
+@app.route('/bookshelf/<int:bookshelf_id>')
+def view_bookshelf(bookshelf_id):
+    bookshelf = BookShelf.query.get_or_404(bookshelf_id)
+
+    if bookshelf.user_id != g.user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    # Get the books in this bookshelf through the BookshelfContent relationships
+    books = [content.book for content in bookshelf.bookshelf_contents]  # Using the backref to navigate the relationship
+
+    return render_template('user_library.html', bookshelf=bookshelf, books=books)
+
+@app.route('/rename_bookshelf/<int:bookshelf_id>', methods=['POST'])
+def rename_bookshelf(bookshelf_id):
+    # Authentication checks, data validation, and renaming logic here...
+    new_name = request.json.get('newName')
+    # Locate the bookshelf and update its name
+    # Save changes and handle errors
+    return jsonify({'success': True})  # or return appropriate message based on the outcome
+
+@app.route('/delete_bookshelf/<int:bookshelf_id>', methods=['POST'])
+def delete_bookshelf(bookshelf_id):
+    # Authentication checks, data validation, and deletion logic here...
+    # Locate the bookshelf and delete it
+    # Save changes and handle errors
+    return jsonify({'success': True})  # or return appropriate message based on the outcome
+
+@app.route('/reorder_bookshelves', methods=['POST'])
+def reorder_bookshelves():
+    # Authentication checks, data validation, and reordering logic here...
+    new_order = request.json.get('newOrder')
+    # Reorder the bookshelves based on new_order
+    # Save changes and handle errors
+    return jsonify({'success': True})  # or return appropriate message based on the outcome
