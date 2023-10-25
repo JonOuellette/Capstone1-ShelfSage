@@ -10,3 +10,8 @@
     border: 1px solid #ddd; 
     
 }
+
+.remove-book-btn {
+    color: lime; 
+    font-size: large;
+}

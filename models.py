@@ -76,9 +76,7 @@ class Book(db.Model):
     image_links = db.Column(db.String)
     info_link = db.Column(db.String)
     volume_id = db.Column(db.String(50), unique=True)
-
-    
-
+  
     
 class BookShelf(db.Model):
     __tablename__ = "bookshelves"
@@ -91,7 +89,7 @@ class BookShelf(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
 
     # Define a relationship with books (shelf content)
-    books = db.relationship('Book', secondary='bookshelf_content', backref='bookshelves', lazy=True)
+    books = db.relationship('Book', secondary='bookshelf_content', backref='bookshelves',  lazy=True)
 
 class UserLibrary(db.Model):
   
@@ -107,8 +105,8 @@ class BookshelfContent(db.Model):
     __tablename__ = "bookshelf_content"
 
     id = db.Column(db.Integer, primary_key = True)
-    bookshelf_id = db.Column(db.Integer, db.ForeignKey('bookshelves.id'))
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
+    bookshelf_id = db.Column(db.Integer, db.ForeignKey('bookshelves.id', ondelete="CASCADE"))
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id', ondelete="CASCADE"))
 
     book = db.relationship('Book', backref='bookshelf_contents')
     bookshelf = db.relationship('BookShelf', backref='bookshelf_contents')

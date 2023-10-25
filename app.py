@@ -3,6 +3,7 @@ import os
 from flask import Flask, render_template, redirect, request, session, jsonify, g, flash, url_for
 # from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 
 import requests
 import re
@@ -320,23 +321,34 @@ def view_library():
 
 @app.route('/delete_book_from_library/<int:book_id>', methods=['POST'])
 def delete_book_from_library(book_id):
-    response_data = {'success': False}  
+    response_data = {'success': False}
 
     if not g.user:
         response_data['error'] = "Access unauthorized."
         return jsonify(response_data), 401
 
-    book = Book.query.get_or_404(book_id)
+    # Use joinedload to load the book and its relationships to avoid multiple DB queries.
+    book = Book.query.options(joinedload(Book.bookshelf_contents)).get_or_404(book_id)
 
     if book in g.user.library:
+        # Remove the book from the user's library
         g.user.library.remove(book)
+
+        # Remove book entries from all bookshelves it's part of
+        for content in book.bookshelf_contents:
+            db.session.delete(content)  # Deleting the BookshelfContent entries
+
+        # Commit the changes to the database.
         db.session.commit()
+
         response_data['success'] = True
         response_data['message'] = "Book removed from your library."
     else:
         response_data['error'] = "This book is not in your library."
 
     return jsonify(response_data)
+
+
 
 #####################################################################################################################################################
 # Create and delete bookshelfs. Move books to bookshelfs.
@@ -469,29 +481,35 @@ def reorder_bookshelves():
         # Handle exceptions here
         return jsonify({'success': False, 'error': str(e)})
     
-@app.route('/remove_book_from_bookshelf/<int:bookshelf_id>/<int:book_id>', methods=['POST'])
-def remove_book_from_bookshelf(bookshelf_id, book_id):
+@app.route('/remove_book_from_bookshelf/<int:bookshelf_id>/<string:volume_id>', methods=['POST'])
+def remove_book_from_bookshelf(bookshelf_id, volume_id):
+    # We'll first verify that the user is logged in and has the right to modify this bookshelf
     if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect(url_for('login'))
+        return jsonify({"success": False, "error": "Access unauthorized"}), 401
 
-    # Assuming you have a Bookshelf model similar to your Book model
+    # First, ensure both the bookshelf and book exist
     bookshelf = BookShelf.query.get_or_404(bookshelf_id)
+    book = Book.query.filter_by(volume_id=volume_id).first()
+    
 
-    # Check if the user owns the bookshelf
-    if bookshelf.user_id != g.user.id:
-        flash("Access unauthorized.", "danger")
-        return redirect(url_for('login'))  
+    # Here we ensure both bookshelf and book are valid and found
+    if bookshelf is None or book is None:
+        
+        return jsonify({"success": False, "error": "Bookshelf or Book not found"}), 404
 
-    # Get the book object
-    book = Book.query.get_or_404(book_id)
+    try:
+        # Find the association entry in the 'bookshelf_content' table
+        assoc = BookshelfContent.query.filter_by(bookshelf_id=bookshelf_id, book_id=book.id).first() 
+        if not assoc:
+            
+            return jsonify({"success": False, "error": "No association found between the bookshelf and book"}), 404
 
-    # Now, remove the book from the bookshelf specifically, rather than the entire library
-    if book in bookshelf.books:
-        bookshelf.books.remove(book)  
+        # Remove the association and save the change
+        db.session.delete(assoc)
         db.session.commit()
-        flash('Book removed from the bookshelf.', 'success')
-        return jsonify(success=True)  # Respond with JSON indicating success
-    else:
-        flash('This book is not on this bookshelf.', 'danger')
-        return jsonify(success=False, error='Book not found on the specified bookshelf.'), 400
+
+        return jsonify({"success": True})
+
+    except Exception as e:
+        db.session.rollback()  
+        return jsonify({"success": False, "error": "Internal server error"}), 500

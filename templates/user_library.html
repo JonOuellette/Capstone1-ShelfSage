@@ -15,10 +15,15 @@
                     <ul class="list-group list-group-flush">
                         <!-- List books in the bookshelf -->
                         {% for book in bookshelf.books %}
-                        <li class="list-group-item">{{ book.title }} <a href="#" class="remove-book float-right" data-book-id="{{ book.id }}">Remove</a></li>
+                        <li class="list-group-item" id="book-{{ book.id }}">
+                            {{ book.title }} 
+                            <!-- Add the class 'remove-book-btn' and necessary data attributes -->
+                            <a href="#" class="remove-book-btn float-right" data-book-id="{{ book.id }}" data-bookshelf-id="{{ bookshelf.id }}" data-volume-id="{{ book.volume_id }}">Remove</a>
+                            <p>{{ book.id }} - {{ bookshelf.id }}</p>
+                        </li>
                         {% endfor %}
                     </ul>
-           
+
                     <div class="card-body">
                         <button class="rename-bookshelf btn btn-primary">Rename Bookshelf</button>
                         <button class="delete-bookshelf btn btn-danger">Delete BookShelf</button>
@@ -46,10 +51,8 @@
                     {% endfor %}
                 </select>
                 
-                <!-- "Delete Book" button -->
+                <!-- "Delete Book" button with class and data attribute -->
                 <button class="btn btn-danger delete-book mt-2" data-book-id="{{ book.id }}">Delete Book</button>
-                
-                
             </div>
         </li>
         {% endif %}
@@ -57,4 +60,3 @@
     </ul>
 </div>
 {% endblock %}
-
