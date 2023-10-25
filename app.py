@@ -483,16 +483,16 @@ def reorder_bookshelves():
     
 @app.route('/remove_book_from_bookshelf/<int:bookshelf_id>/<string:volume_id>', methods=['POST'])
 def remove_book_from_bookshelf(bookshelf_id, volume_id):
-    # We'll first verify that the user is logged in and has the right to modify this bookshelf
+    # Verifies that the user is logged in and has the right to modify this bookshelf
     if not g.user:
         return jsonify({"success": False, "error": "Access unauthorized"}), 401
 
-    # First, ensure both the bookshelf and book exist
+    # Checks that both the bookshelf and book exist
     bookshelf = BookShelf.query.get_or_404(bookshelf_id)
     book = Book.query.filter_by(volume_id=volume_id).first()
     
 
-    # Here we ensure both bookshelf and book are valid and found
+    # Ensures both bookshelf and book are valid and found
     if bookshelf is None or book is None:
         
         return jsonify({"success": False, "error": "Bookshelf or Book not found"}), 404

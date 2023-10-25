@@ -71,7 +71,6 @@ $(document).ready(function() {
         }
     });
 
-    
     // Listens for a change in the bookshelf selector.
     $('.bookshelf-selector').change(function() {
         let bookElement = $(this).closest('.media'); // This is the HTML element of the book.
@@ -98,10 +97,9 @@ $(document).ready(function() {
                         
                         // finds an existing 'Remove' button.
                         let removeBtn = bookElement.find('.remove-book-btn');
-
                         // If the 'Remove' button doesn't exist (which might be the case if the book was not in a bookshelf before),
-                        // we create one and set the necessary data attributes.
                         if (removeBtn.length === 0) {
+                        //checks if teh remove button was found.
                             removeBtn = $('<button class="remove-book-btn btn btn-danger">Remove</button>');
                             bookElement.append(removeBtn);
                             console.log(removeBtn)
@@ -111,8 +109,8 @@ $(document).ready(function() {
                         removeBtn.show();
 
                         // Set the 'data-volume-id' and 'data-bookshelf-id' attributes on the 'Remove' button. 
-                        removeBtn.attr('data-volume-id', volumeId); // <-- Setting the correct volume ID for the book.
-                        removeBtn.attr('data-bookshelf-id', selectedBookshelfId); // <-- Setting the correct bookshelf ID.
+                        removeBtn.attr('data-volume-id', volumeId); // <-- Sets the volume ID for the book.
+                        removeBtn.attr('data-bookshelf-id', selectedBookshelfId); // <-- Sets the bookshelf ID.
 
                         // Hide the 'Delete' button that's meant for when the book is not in any bookshelf.
                         bookElement.find('.delete-book').hide();
@@ -125,7 +123,7 @@ $(document).ready(function() {
                     }
                 })
                 .catch(function(error) {
-                // The server request failed (possibly a connectivity issue, server crash, etc.), so we log the error.
+                
                 console.error('There was an error adding the book!', error);
                 });
         }
@@ -159,8 +157,8 @@ $(document).ready(function() {
         let bookElement = $(this).closest('.media');
     
         // Extracting the necessary data attributes.
-        var volumeId = $(this).data('volume-id');
-        var bookshelfId = $(this).data('bookshelf-id');
+        let volumeId = $(this).data('volume-id');
+        let bookshelfId = $(this).data('bookshelf-id');
     
         if (volumeId) { 
             // Send a request to the server to remove the book from the bookshelf.
