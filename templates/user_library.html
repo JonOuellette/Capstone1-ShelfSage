@@ -16,6 +16,7 @@
                         <!-- List books in the bookshelf -->
                         {% for book in bookshelf.books %}
                         <li class="list-group-item" id="book-{{ book.id }}">
+                            <img src="{{ book.image_links }}" class="mr-3" alt="Book Cover" style="width: 64px; height: 64px;">
                             {{ book.title }} 
                             <!-- Add the class 'remove-book-btn' and necessary data attributes -->
                             <a href="#" class="remove-book-btn float-right" data-book-id="{{ book.id }}" data-bookshelf-id="{{ bookshelf.id }}" data-volume-id="{{ book.volume_id }}">Remove</a>
@@ -46,8 +47,8 @@
                 <!-- Dropdown to select bookshelf -->
                 <select class="bookshelf-selector form-control" data-volume-id="{{ book.volume_id }}">
                     <option value="">Add to bookshelf...</option>
-                    {% for bookshelf in bookshelves %}
-                    <option value="{{ bookshelf.id }}">{{ bookshelf.name }}</option>
+                    {% for _bookshelf in bookshelves %}
+                    <option value="{{ _bookshelf.id }}">{{ _bookshelf.name }}</option>
                     {% endfor %}
                 </select>
                 

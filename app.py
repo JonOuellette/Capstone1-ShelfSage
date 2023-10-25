@@ -405,6 +405,7 @@ def add_book_to_bookshelf(bookshelf_id, volume_id):
     else:
         # Create a new BookshelfContent item and associate it with the book and bookshelf
         new_content = BookshelfContent(bookshelf_id=bookshelf.id, book_id=book.id)
+        BookshelfContent.query.filter_by(book_id = book.id).delete()
         db.session.add(new_content)
         db.session.commit()
 
@@ -491,21 +492,26 @@ def remove_book_from_bookshelf(bookshelf_id, volume_id):
     bookshelf = BookShelf.query.get_or_404(bookshelf_id)
     book = Book.query.filter_by(volume_id=volume_id).first()
     
-
     # Ensures both bookshelf and book are valid and found
     if bookshelf is None or book is None:
         
         return jsonify({"success": False, "error": "Bookshelf or Book not found"}), 404
 
     try:
-        # Find the association entry in the 'bookshelf_content' table
-        assoc = BookshelfContent.query.filter_by(bookshelf_id=bookshelf_id, book_id=book.id).first() 
-        if not assoc:
-            
-            return jsonify({"success": False, "error": "No association found between the bookshelf and book"}), 404
+        # Finds all the associatiosn of this book with any bookshelf
+        associations = BookshelfContent.query.filter_by(book_id=book.id).all()  
+
+        if len(associations) > 1:
+            # The book is in multiple bookshelves, remove it only from the current one
+            current_association = next((assoc for assoc in associations if assoc.bookshelf_id == bookshelf_id), None)
+            if current_association:
+                db.session.delete(current_association)
+        else:
+            # The book is only in the current bookshelf, we can remove the single association
+            if associations:
+                db.session.delete(associations[0])
 
         # Remove the association and save the change
-        db.session.delete(assoc)
         db.session.commit()
 
         return jsonify({"success": True})
