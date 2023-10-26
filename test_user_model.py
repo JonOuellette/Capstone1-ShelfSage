@@ -5,7 +5,7 @@ from sqlalchemy import exc
 from models import db, User, Book, BookShelf, UserLibrary, BookshelfContent
 
 os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost/ShelfSage-test')
-
+app.config['WTF_CSRF_ENABLED'] = False
 from app import app
 
 class UserModelTestCase(TestCase):

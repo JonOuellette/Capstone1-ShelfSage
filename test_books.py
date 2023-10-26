@@ -6,6 +6,7 @@ import requests_mock
 from models import db, User, Book, BookShelf, UserLibrary, BookshelfContent
 
 os.environ['DATABASE_URL'] = 'postgresql://postgres:postgres@localhost/ShelfSage-test'
+app.config['WTF_CSRF_ENABLED'] = False
 
 from app import app
 
