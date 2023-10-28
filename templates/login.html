@@ -1,20 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="row justify-content-md-center align-items-center vh-100"> 
+  <h1 class="text-center app-title">Shelf Sage</h1>
 
-<form method="POST" >
-    {{ form.hidden_tag() }}
+  <div class="col-12 text-center">
+    <img src="static/images/openbook.png" alt="Book Image" class="img-fluid centered-img" >
+  </div>
+  
+  <div class="col-md-7 col-lg-5">
+    <form method="POST" class="custom-form">
+        {{ form.hidden_tag() }}
 
-    {% for field in form if field.widget.input_type != 'hidden' %}
-      {% for error in field.errors %}
-        <span class="text-danger">{{ error }}</span>
-      {% endfor %}
-      {{ field(placeholder=field.label.text, class="form-control") }}
-    {% endfor %}
+        {% for field in form if field.widget.input_type != 'hidden' %}
+            {% for error in field.errors %}
+                <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+            {{ field(placeholder=field.label.text, class="form-control mb-3") }}
+        {% endfor %}
 
-    <button class="btn btn-primary btn-lg btn-block">Log In!</button>
-  </form>
-
-
-
+        <button class="btn btn-primary btn-lg btn-block">Log In!</button>
+    </form>
+  </div>
+</div>
 {% endblock %}

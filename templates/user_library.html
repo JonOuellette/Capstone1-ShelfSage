@@ -20,7 +20,7 @@
                             {{ book.title }} 
                             <!-- Add the class 'remove-book-btn' and necessary data attributes -->
                             <a href="#" class="remove-book-btn float-right" data-book-id="{{ book.id }}" data-bookshelf-id="{{ bookshelf.id }}" data-volume-id="{{ book.volume_id }}">Remove</a>
-                            <p>{{ book.id }} - {{ bookshelf.id }}</p>
+                            
                         </li>
                         {% endfor %}
                     </ul>

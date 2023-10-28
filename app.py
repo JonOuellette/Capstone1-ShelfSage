@@ -204,7 +204,7 @@ def search():
 
     # Extract pagination parameters or set default
     start_index = request.args.get('start', default=0, type=int)
-    max_results = request.args.get('max', default=10, type=int)
+    max_results = request.args.get('max', default=20, type=int)
 
     
     if form.validate_on_submit():

@@ -7,18 +7,22 @@
     {% if results %}
         <p>Showing results {{ start + 1 }} to {{ start + results|length }} of {{ total_results }}</p>
         <ul>
+        
+        <div class="row">
         {% for result in results %}
-            <li>
+            <div class="col-lg-3 col-md-6 book-item">
+            
                 <h3><a href="{{ url_for('book_details', volume_id=result.id) }}">{{ result.volumeInfo.title }}</a></h3>
+                {% if result.volumeInfo.imageLinks %}
+                        <img src="{{ result.volumeInfo.imageLinks.thumbnail }}" alt="Book Cover">
+                {% else %}
+                <img src="static/images/book-cover-not-avail.jpg" alt="Book Cover Not Available" style="height: 200px; object-fit: contain; width: 100%;">
+                {% endif %}
                 <p>Author(s): {{ result.volumeInfo.authors|join(', ') }}</p>
                 <p>Publisher: {{ result.volumeInfo.publisher }}</p>
                 <p>Published Date: {{ result.volumeInfo.publishedDate }}</p>
                 
-                {% if result.volumeInfo.imageLinks %}
-                        <img src="{{ result.volumeInfo.imageLinks.thumbnail }}" alt="Book Cover">
-                {% else %}
-                    <p>No image available</p>
-                {% endif %}
+                
 
                 <form action="{{ url_for('add_book_to_library', volume_id=result.id) }}" method="post">
 
@@ -37,8 +41,9 @@
                 </form>
                 
 
-            </li>
+            </div>
         {% endfor %}
+        </div>    
         </ul>
         <nav>
             {% if start > 0 %}

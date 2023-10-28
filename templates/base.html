@@ -11,6 +11,7 @@
     <script src="https://unpkg.com/bootstrap"></script>
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
     
 </head>
 
@@ -20,21 +21,22 @@
         <div class="container-fluid">
             <div class="navbar-header">
                 <a href="/" class="navbar-brand">
+                    <img src="/static/images/bookstack.png" alt="Shelf Sage Logo" class="navbar-logo">
                     Shelf Sage
                 </a>
             </div>
             <ul class="nav navbar-nav navbar-right">
                 {% if not g.user %}
-                    <li><a href="/signup">Sign up</a></li>
-                    <li><a href="/login">Log in</a></li>
+                    <li class="nav-item pe-3"><a href="/signup">Sign up</a></li>
+                    <li class="nav-item pe-3"><a href="/login">Log in</a></li>
                 {% else %}
-                    <li>
+                    <li class="nav-item pe-3">
                         <a href="/my_library">My Library</a>
                     </li>
-                    <li>
+                    <li class="nav-item pe-3">
                         <a href="/logout">Log out</a>
                     </li>
-                    <li>
+                    <li class="nav-item pe-3">
                         <a href="{{ url_for('create_bookshelf') }}">Create Bookshelf</a>
                     </li>
                 {% endif %}
