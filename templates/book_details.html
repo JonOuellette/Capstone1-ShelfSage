@@ -1,15 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Book Details</h1>
+    
     <div>
-        <h2>{{ book.title }}</h2>
-        <p>Author(s): {{ book.authors|join(', ')|safe }}</p>
-        <p>Publisher(s): {{ book.publisher|safe }}</p>
-        <p>Published Date: {{ book.publishedDate|safe }}</p>
-        <p>Description: {{ book.description|safe }}</p>
-        <p>Categories: {{ book.categories|join(', ')|safe }}</p>
-        
+        <h1 class="search-results-title">{{ book.title }}</h1>
         {% if book.imageLinks %}
             {% if book.imageLinks.thumbnail %}
                 <img src="{{ book.imageLinks.thumbnail }}" alt="Book Cover">
@@ -17,8 +11,20 @@
         {% elif book.image_link %}
             <img src="{{ book.image_link }}" alt="Book Cover">
         {% else %}
-            <p>No image available.</p>
+            <img src="/static/images/book-cover-not-avail.jpg" alt="Book Cover Not Available" style="height: 200px; object-fit: contain; ">
         {% endif %}
+        <p>Author(s): {{ book.authors|join(', ')|safe }}</p>
+        {% if book.isbns %}
+        <p>ISBNs: {{ book.isbns|join(', ') }}</p>
+        {% else %}
+        <p>ISBNs: Not available</p>
+        {% endif %}
+        <p>Publisher(s): {{ book.publisher|safe }}</p>
+        <p>Published Date: {{ book.publishedDate|safe }}</p>
+        <p>Description: {{ book.description|safe }}</p>
+        <p>Categories: {{ book.categories|join(', ')|safe }}</p>
+        
+        
     </div>
 
     <div>

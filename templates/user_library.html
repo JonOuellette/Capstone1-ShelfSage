@@ -10,17 +10,17 @@
         <div class="col-md-4">
             <div class="bookshelf card mt-4" data-bookshelf-id="{{ bookshelf.id }}">
                 <div class="card-body">
-                    <h2 class="card-title bookshelf-name">{{ bookshelf.name }}</h2> 
-                    <p class="card-text">{{ bookshelf.description }}</p>
+                    <h2 class="card-title bookshelf-name">{{ bookshelf.name }}</h2>
+                    <hr> 
                     <ul class="list-group list-group-flush">
                         <!-- List books in the bookshelf -->
                         {% for book in bookshelf.books %}
                         <li class="list-group-item" id="book-{{ book.id }}">
-                            <img src="{{ book.image_links }}" class="mr-3" alt="Book Cover" style="width: 64px; height: 64px;">
-                            {{ book.title }} 
+                            <img src="{{ book.image_links }}" alt="Book Cover" style="height: auto; width: 64px; object-fit: contain;" class="mr-3">
+                            <h6 class="mb-0">{{ book.title }}</h6>
+                            <small>{{ book.authors }}</small>
                             <!-- Add the class 'remove-book-btn' and necessary data attributes -->
                             <a href="#" class="remove-book-btn float-right" data-book-id="{{ book.id }}" data-bookshelf-id="{{ bookshelf.id }}" data-volume-id="{{ book.volume_id }}">Remove</a>
-                            
                         </li>
                         {% endfor %}
                     </ul>
@@ -43,7 +43,8 @@
         <li class="media my-4">
             <img src="{{ book.image_links }}" class="mr-3" alt="Book Cover" style="width: 64px; height: 64px;">
             <div class="media-body">
-                <h5 class="mt-0 mb-1">{{ book.title }}</h5>
+                <h6 class="mb-0">{{ book.title }}</h6>
+                <small>{{ book.authors }}</small>
                 <!-- Dropdown to select bookshelf -->
                 <select class="bookshelf-selector form-control" data-volume-id="{{ book.volume_id }}">
                     <option value="">Add to bookshelf...</option>

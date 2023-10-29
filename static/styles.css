@@ -21,6 +21,20 @@ ul {
     
 }
 
+.search-results-title{
+    font-family: "Playfair";
+    font-size: 3rem;
+}
+
+.search-result-links{
+    font-size: 1.35rem;
+    color: #3A4D39;
+}
+
+.search-result-links:hover {
+    color: #B2C8BA;
+}
+
 .centered-img {
     display: block;
     margin-left: auto;
@@ -50,8 +64,15 @@ ul {
 }
 
 .remove-book-btn {
-    color: lime; 
-    font-size: large;
+    color:  red; 
+    font-size: small;
+}
+
+.bookshelf-dropdown {
+    width: 150px; /* or any size you prefer */
+    height: 25px;
+    font-size: small;
+    padding: 0;
 }
 
 .navbar-logo {
@@ -67,5 +88,6 @@ ul {
     box-sizing: border-box;
     border: 1px solid #ddd; 
     padding: 10px; 
+    text-align: left;
     
 }

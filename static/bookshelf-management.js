@@ -100,7 +100,7 @@ $(document).ready(function() {
                         // If the 'Remove' button doesn't exist (which might be the case if the book was not in a bookshelf before),
                         if (removeBtn.length === 0) {
                         //checks if teh remove button was found.
-                            removeBtn = $('<button class="remove-book-btn btn btn-danger">Remove</button>');
+                            removeBtn = $('<button class="remove-book-btn btn-sm btn-danger">Remove</button>');
                             bookElement.append(removeBtn);
                             console.log(removeBtn)
                         }
@@ -195,6 +195,3 @@ $(document).ready(function() {
     
 
 });
-
-
-

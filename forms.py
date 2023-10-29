@@ -32,4 +32,4 @@ class SearchForm(FlaskForm):
 class BookshelfForm(FlaskForm):
     """Form for creating a bookshelf"""
     name = StringField('BookShelf Name', validators=[DataRequired(), Length(max=20)])
-    description = StringField('Description:', validators = [Length(max=100)])
+    

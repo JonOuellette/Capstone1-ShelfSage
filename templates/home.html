@@ -44,7 +44,7 @@
                     {% if book.volumeInfo.imageLinks and book.volumeInfo.imageLinks.thumbnail %}
                     <img src="{{ book.volumeInfo.imageLinks.thumbnail }}" class="card-img-top" alt="Book cover" style="height: 250px; object-fit: contain; width: 100%;"> <!-- Adjusted object-fit to 'contain' -->
                     {% else %}
-                    <img src="static/images/book-cover-not-avail.jpg" class="card-img-top" alt="Book Cover Not Available" style="height: 250px; object-fit: contain; width: 100%;">
+                    <img src="/static/images/book-cover-not-avail.jpg" class="card-img-top" alt="Book Cover Not Available" style="height: 250px; object-fit: contain; width: 100%;">
                     {% endif %}
                 </div>
             </div>

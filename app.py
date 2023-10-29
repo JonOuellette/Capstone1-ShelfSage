@@ -234,6 +234,12 @@ def search():
             total_results = data.get('totalItems', 0)
             results = data.get('items', [])
 
+             # Extract ISBNs for each book and append to the book's volumeInfo
+            for result in results:
+                volume_info = result.get('volumeInfo', {})
+                industry_identifiers = volume_info.get('industryIdentifiers', [])
+                isbns = [ident.get('identifier') for ident in industry_identifiers if ident.get('type') in ['ISBN_10', 'ISBN_13']]
+                volume_info['isbns'] = isbns
             # Render the same page with results
             return render_template('search_results.html', form=form, results=results, total_results=total_results, start=start_index, max=max_results, query=search_query, type=search_type)
         else:
@@ -255,8 +261,10 @@ def book_details(volume_id):
                 book = book_data.get('volumeInfo', {})
                 book['volume_id'] = volume_id 
                 
-                #Debugging step: print the description to the console
-                print(book.get('description'))
+                # Extract ISBNs and add them to the 'book' information
+                industry_identifiers = book.get('industryIdentifiers', [])
+                isbns = [ident.get('identifier') for ident in industry_identifiers if ident.get('type') in ['ISBN_10', 'ISBN_13']]
+                book['isbns'] = isbns  # Adding a new field 'isbns' to 'book'
 
                 description = book.get('description', '')
                 #some books appeared to have a random " at the end of the description.  This was coming directly from the API.  Using regular expression to remove the random ".
@@ -364,7 +372,6 @@ def create_bookshelf():
     if form.validate_on_submit():
         new_bookshelf = BookShelf(
             name=form.name.data,
-            description=form.description.data,
             user_id=g.user.id  
         )
         db.session.add(new_bookshelf)

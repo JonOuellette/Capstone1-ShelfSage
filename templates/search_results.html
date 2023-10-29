@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Search Results</h1>
+    <h1 class="search-results-title">Search Results:</h1>
 
     {% if results %}
         <p>Showing results {{ start + 1 }} to {{ start + results|length }} of {{ total_results }}</p>
@@ -12,15 +12,17 @@
         {% for result in results %}
             <div class="col-lg-3 col-md-6 book-item">
             
-                <h3><a href="{{ url_for('book_details', volume_id=result.id) }}">{{ result.volumeInfo.title }}</a></h3>
+                <h3><a href="{{ url_for('book_details', volume_id=result.id) }}" class="search-result-links">{{ result.volumeInfo.title }}</a></h3>
                 {% if result.volumeInfo.imageLinks %}
-                        <img src="{{ result.volumeInfo.imageLinks.thumbnail }}" alt="Book Cover">
+                        <img src="{{ result.volumeInfo.imageLinks.thumbnail }}" alt="Book Cover" >
                 {% else %}
-                <img src="static/images/book-cover-not-avail.jpg" alt="Book Cover Not Available" style="height: 200px; object-fit: contain; width: 100%;">
+               
+                    <img src="/static/images/book-cover-not-avail.jpg" alt="Book Cover Not Available" style="height: 200px; object-fit: contain; ">
+                  
                 {% endif %}
                 <p>Author(s): {{ result.volumeInfo.authors|join(', ') }}</p>
-                <p>Publisher: {{ result.volumeInfo.publisher }}</p>
-                <p>Published Date: {{ result.volumeInfo.publishedDate }}</p>
+                <p>ISBNs: {{ result.volumeInfo.isbns|join(', ') }}</p> 
+                
                 
                 
 
